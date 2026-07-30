@@ -1,0 +1,12 @@
+numpy
+tensorflow
+streamlit
+matplotlib
+scikit-learn
+reportlab
+opencv-python
+scipy
+imbalanced-learn
+pandas
+wfdb
+pillow
