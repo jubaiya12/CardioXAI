@@ -1,7 +1,6 @@
 *.zip
 *.npy
 *.h5
-*.keras
 mitbih_test.csv/
 INCART 2-lead Arrhythmia Database.csv/
 venv/
