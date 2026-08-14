@@ -17,18 +17,27 @@ matplotlib.use('Agg')
 # ── Load model + data ──────────────────────────────────────────────
 @st.cache_resource
 def load_model():
-    return tf.keras.models.load_model('ecg_cnn_lstm_model.keras')
+    return tf.keras.models.load_model('models/ecg_cnn_lstm_model.keras')
 
 @st.cache_data
 def load_data():
-    beats = np.load('beats.npy')
-    labels = np.load('labels.npy')
-    with open('label_encoder.pkl', 'rb') as f:
+    beats = np.load('data/beats.npy')
+    labels = np.load('data/labels.npy')
+    with open('data/label_encoder.pkl', 'rb') as f:
         le = pickle.load(f)
     return beats, labels, le
 
+@st.cache_data
+def load_history():
+    try:
+        with open('models/training_history.pkl', 'rb') as f:
+            return pickle.load(f)
+    except FileNotFoundError:
+        return None
+
 model = load_model()
 beats, labels, le = load_data()
+history = load_history()
 
 CLASS_NAMES = {0: 'A (Atrial)', 1: 'L (Left Bundle)', 2: 'N (Normal)', 3: 'R (Right Bundle)', 4: 'V (Ventricular)'}
 CLASS_COLORS = {0: '#f39c12', 1: '#9b59b6', 2: '#2ecc71', 3: '#3498db', 4: '#e74c3c'}
@@ -130,51 +139,6 @@ with st.sidebar:
     </table>
     </div>
     """, unsafe_allow_html=True)
-
-    st.divider()
-
-    with st.expander("📈 Confusion Matrix"):
-        sample_idx = np.random.choice(len(beats), 300, replace=False)
-        X_sample = beats[sample_idx][..., np.newaxis]
-        y_sample = labels[sample_idx]
-        preds_all = np.argmax(model.predict(X_sample, verbose=0), axis=1)
-        cm = confusion_matrix(y_sample, preds_all)
-        fig_cm, ax_cm = plt.subplots(figsize=(4, 3.5))
-        fig_cm.patch.set_facecolor('#0d1b2a')
-        ax_cm.set_facecolor('#0d1b2a')
-        im = ax_cm.imshow(cm, cmap='Blues')
-        ax_cm.set_xticks(range(5))
-        ax_cm.set_yticks(range(5))
-        ax_cm.set_xticklabels(['A','L','N','R','V'], color='white', fontsize=8)
-        ax_cm.set_yticklabels(['A','L','N','R','V'], color='white', fontsize=8)
-        ax_cm.set_xlabel('Predicted', color='white', fontsize=8)
-        ax_cm.set_ylabel('True', color='white', fontsize=8)
-        for i in range(5):
-            for j in range(5):
-                ax_cm.text(j, i, cm[i,j], ha='center', va='center', color='white', fontsize=7)
-        plt.tight_layout()
-        st.pyplot(fig_cm)
-        plt.close()
-
-    with st.expander("📚 Literature Comparison"):
-        from evaluation import plot_comparison
-        fig_comp = plot_comparison()
-        st.pyplot(fig_comp)
-        plt.close()
-
-    with st.expander("🎯 Research Contributions"):
-        st.markdown("""
-<small>
- End-to-End ECG Pipeline<br>
- ECG Image Digitization<br>
- CNN-LSTM Classification<br>
- Grad-CAM Explainability<br>
- Inter-Patient Evaluation<br>
- AI Clinical Summary<br>
- PDF Report Generation<br>
- Literature Benchmarking
-</small>
-        """, unsafe_allow_html=True)
 
     st.markdown("<p style='color:#444;font-size:10px;text-align:center;margin-top:8px'>⚠️ Research only. Not for clinical diagnosis.</p>", unsafe_allow_html=True)
 
@@ -301,13 +265,13 @@ if mode == "📊 MIT-BIH + CSV":
                         st.info(f"Patient name detected: **{detected_name}** — update in sidebar if incorrect.")
 
                     steps_csv = [
-                        " Reading CSV File...",
-                        " Detecting Signal Column...",
-                        " Normalizing Signal...",
-                        " Segmenting Beat...",
-                        " Running CNN-LSTM...",
-                        " Generating Grad-CAM...",
-                        " Creating Clinical Report..."
+                        "📤 Reading CSV File...",
+                        "🔍 Detecting Signal Column...",
+                        "📐 Normalizing Signal...",
+                        "✂️ Segmenting Beat...",
+                        "🧠 Running CNN-LSTM...",
+                        "🔥 Generating Grad-CAM...",
+                        "📋 Creating Clinical Report..."
                     ]
                     progress_bar = st.progress(0)
                     status_text = st.empty()
@@ -333,7 +297,7 @@ if mode == "📊 MIT-BIH + CSV":
 elif mode == "🖼️ ECG Image":
     st.markdown("""
     <div style='background:#0d1b2a;padding:12px;border-radius:8px;margin-bottom:12px;border:1px solid #1b263b'>
-    <p style='color:#00d4ff;margin:0;font-size:13px;font-weight:bold'> How ECG Image Analysis Works</p>
+    <p style='color:#00d4ff;margin:0;font-size:13px;font-weight:bold'>📋 How ECG Image Analysis Works</p>
     <p style='color:#888;margin:4px 0 0 0;font-size:11px'>
     Your ECG image is processed to extract the electrical signal from a specific lead. 
     <b style='color:white'>Lead I</b> is recommended as our model was trained on Lead I signals from MIT-BIH.
@@ -536,7 +500,7 @@ if beat is not None:
     # ── Class probabilities + PDF ───────────────────────────────────
     col_p1, col_p2 = st.columns([2, 1])
     with col_p1:
-        st.markdown("####  Class Probabilities")
+        st.markdown("#### 📊 Class Probabilities")
         prob_fig, ax = plt.subplots(figsize=(8, 3))
         prob_fig.patch.set_facecolor('#0d1b2a')
         ax.set_facecolor('#0d1b2a')
@@ -553,12 +517,12 @@ if beat is not None:
         plt.close()
 
     with col_p2:
-        st.markdown("####  Report")
+        st.markdown("#### 📥 Report")
         if true_class is not None:
             st.markdown(f"**True Label:** `{CLASS_NAMES[true_class]}`")
         pdf_buf = generate_pdf(patient_name, beat[:, 0], heatmap, pred_class, confidence, true_class)
         st.download_button(
-            " Download Clinical Report (PDF)",
+            "📥 Download Clinical Report (PDF)",
             data=pdf_buf,
             file_name=f"ExplainECG_{patient_name}_{datetime.date.today()}.pdf",
             mime="application/pdf",
@@ -579,4 +543,79 @@ if beat is not None:
 <p style='color:{sq_color};font-weight:bold;font-size:13px;margin:0'>{sq_label}</p>
 <p style='color:#666;font-size:10px;margin:2px 0 0 0'>SNR: {snr:.1f} dB | Noise: {noise_pct:.0f}%</p>
 </div>
+        """, unsafe_allow_html=True)
+
+    st.divider()
+
+    # ── Model Performance & Evaluation (now sits right before Confusion Matrix) ─
+    with st.expander("📈 Model Performance & Evaluation"):
+        if history is not None:
+            fig_hist, axes_hist = plt.subplots(1, 2, figsize=(12, 3.5))
+            fig_hist.patch.set_facecolor('#0d1b2a')
+            for ax in axes_hist:
+                ax.set_facecolor('#0d1b2a')
+                ax.tick_params(colors='#888')
+                ax.spines[:].set_color('#333')
+
+            axes_hist[0].plot(history['accuracy'], color='#00d4ff', label='Train')
+            axes_hist[0].plot(history['val_accuracy'], color='#e74c3c', label='Validation')
+            axes_hist[0].set_title('Accuracy over epochs', color='white', fontsize=11)
+            axes_hist[0].set_xlabel('Epoch', color='#888', fontsize=9)
+            axes_hist[0].legend(fontsize=8, facecolor='#0d1b2a', edgecolor='#333', labelcolor='white')
+
+            axes_hist[1].plot(history['loss'], color='#00d4ff', label='Train')
+            axes_hist[1].plot(history['val_loss'], color='#e74c3c', label='Validation')
+            axes_hist[1].set_title('Loss over epochs', color='white', fontsize=11)
+            axes_hist[1].set_xlabel('Epoch', color='#888', fontsize=9)
+            axes_hist[1].legend(fontsize=8, facecolor='#0d1b2a', edgecolor='#333', labelcolor='white')
+
+            plt.tight_layout()
+            st.pyplot(fig_hist)
+            plt.close()
+        else:
+            st.info(
+                "Training history not found (`models/training_history.pkl`). To show real accuracy/loss curves here, "
+                "add this to **model.py** right after `model.fit(...)`, then retrain once:\n\n"
+                "```python\nhist = model.fit(...)\nimport pickle\nwith open('models/training_history.pkl', 'wb') as f:\n"
+                "    pickle.dump(hist.history, f)\n```"
+            )
+
+    # ── Confusion Matrix (moved here — after Class Probabilities) ───
+    with st.expander("📈 Confusion Matrix"):
+        sample_idx = np.random.choice(len(beats), 300, replace=False)
+        X_sample = beats[sample_idx][..., np.newaxis]
+        y_sample = labels[sample_idx]
+        preds_all = np.argmax(model.predict(X_sample, verbose=0), axis=1)
+        cm = confusion_matrix(y_sample, preds_all)
+        fig_cm, ax_cm = plt.subplots(figsize=(3, 2.4))
+        fig_cm.patch.set_facecolor('#0d1b2a')
+        ax_cm.set_facecolor('#0d1b2a')
+        im = ax_cm.imshow(cm, cmap='Blues')
+        ax_cm.set_xticks(range(5))
+        ax_cm.set_yticks(range(5))
+        ax_cm.set_xticklabels(['A', 'L', 'N', 'R', 'V'], color='white', fontsize=7)
+        ax_cm.set_yticklabels(['A', 'L', 'N', 'R', 'V'], color='white', fontsize=7)
+        ax_cm.set_xlabel('Predicted', color='white', fontsize=7)
+        ax_cm.set_ylabel('True', color='white', fontsize=7)
+        ax_cm.set_title('Confusion Matrix (300-sample check)', color='white', fontsize=8)
+        for i in range(5):
+            for j in range(5):
+                ax_cm.text(j, i, cm[i, j], ha='center', va='center', color='white', fontsize=6)
+        plt.tight_layout()
+        st.pyplot(fig_cm, use_container_width=False)
+        plt.close()
+
+    # ── Research Contributions (moved here — after Confusion Matrix) ─
+    with st.expander("🎯 Research Contributions"):
+        st.markdown("""
+<small>
+ End-to-End ECG Pipeline<br>
+ ECG Image Digitization<br>
+ CNN-LSTM Classification<br>
+ Grad-CAM Explainability<br>
+ Inter-Patient Evaluation<br>
+ AI Clinical Summary<br>
+ PDF Report Generation<br>
+ Literature Benchmarking
+</small>
         """, unsafe_allow_html=True)
