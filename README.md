@@ -156,8 +156,3 @@ Distributed under the MIT License. See [`LICENSE`](LICENSE) for details.
 - [MIT-BIH Arrhythmia Database](https://physionet.org/content/mitdb/) — Moody GB, Mark RG. *The impact of the MIT-BIH Arrhythmia Database.* IEEE Eng in Med and Biol 20(3):45-50 (2001)
 - [PhysioNet](https://physionet.org/) for hosting and maintaining the dataset
 
----
-
-<div align="center">
-<sub>Built by <a href="https://github.com/<your-username>">Umma Jubaiya</a></sub>
-</div>
