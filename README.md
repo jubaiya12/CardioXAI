@@ -19,7 +19,7 @@ An interpretable deep learning system for ECG arrhythmia detection — built to 
 
 ## Overview
 
-CardioXAI classifies cardiac arrhythmias from ECG signals using a hybrid **CNN-LSTM** architecture trained on the **MIT-BIH Arrhythmia Database**, and explains every prediction with **Grad-CAM** — highlighting exactly which part of the heartbeat (P-wave, QRS complex, or T-wave) the model relied on.
+CardioXAI classifies cardiac arrhythmias from ECG signals using a hybrid **CNN-LSTM** architecture trained on the **MIT-BIH Arrhythmia Database** and explains every prediction with **Grad-CAM** — highlighting exactly which part of the heartbeat (P-wave, QRS complex, or T-wave) the model relied on.
 
 Most arrhythmia classifiers are black boxes. CardioXAI is built around the opposite premise: a clinical decision support tool is only useful if a clinician can see *why* the model reached its conclusion. Every prediction ships with a region-level attention breakdown and a downloadable clinical report.
 
