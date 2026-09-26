@@ -61,11 +61,11 @@ if __name__ == '__main__':
     test_labels = le.transform(test_labels_raw)
 
     # Save everything
-    np.save('train_beats.npy', train_beats)
-    np.save('train_labels.npy', train_labels)
-    np.save('test_beats.npy', test_beats)
-    np.save('test_labels.npy', test_labels)
-    with open('label_encoder.pkl', 'wb') as f:
+    np.save('data/train_beats.npy', train_beats)
+    np.save('data/train_labels.npy', train_labels)
+    np.save('data/test_beats.npy', test_beats)
+    np.save('data/test_labels.npy', test_labels)
+    with open('data/label_encoder.pkl', 'wb') as f:
         pickle.dump(le, f)
 
     print(f"\nDone. Train: {len(train_beats)}, Test: {len(test_beats)}")

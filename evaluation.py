@@ -11,7 +11,7 @@ def run_full_evaluation(model, beats, labels):
     X = beats[..., np.newaxis]
     preds = np.argmax(model.predict(X, verbose=0), axis=1)
     
-    with open('label_encoder.pkl', 'rb') as f:
+    with open('data/label_encoder.pkl', 'rb') as f:
         le = pickle.load(f)
     
     report = classification_report(
